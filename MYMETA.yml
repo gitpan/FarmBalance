@@ -1,14 +1,13 @@
 ---
-abstract: 'make nice balance in Farming System regarding data, traffics, etc..'
+abstract: unknown
 author:
-  - 'DUKKIE(Masataka Koduka) <dukkiedukkie@yahoo.co.jp>'
+  - 'DUKKIE <dukkiedukkie@yahoo.co.jp>'
 build_requires:
   ExtUtils::MakeMaker: 6.36
 configure_requires:
   ExtUtils::MakeMaker: 6.36
-distribution_type: module
-dynamic_config: 1
-generated_by: 'Module::Install version 1.04'
+dynamic_config: 0
+generated_by: 'Module::Install version 1.04, CPAN::Meta::Converter version 2.112150'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -19,6 +18,7 @@ no_index:
     - inc
     - t
     - xt
+requires: {}
 resources:
   license: http://dev.perl.org/licenses/
   repository: git://github.com/dukkie/FarmBalance.git
