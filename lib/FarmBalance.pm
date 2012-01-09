@@ -1,6 +1,6 @@
 package FarmBalance;
 use Mouse;
-our $VERSION = '0.01';
+our $VERSION = '0.03';
 
 #- Input
 has 'farms' => (
@@ -10,17 +10,17 @@ has 'farms' => (
 );
 has 'stats' => (
 	is=>'rw', 
-	isa=>'HashRef[ArrayRef[Int]]', 
+	isa=>'HashRef[ArrayRef[Num]]', 
 	required=>1,
 );
 has 'input' => (
 	is=>'rw', 
-	isa=>'HashRef[Int]'
+	isa=>'HashRef[Num]'
 );
 
 has 'debug' => (
 	is=>'rw', 
-	isa=>'Int', 
+	isa=>'Bool', 
 	default=>0
 );
 #- Output
@@ -55,12 +55,37 @@ sub input_fill_avg {
 	}
 }
 
+#- check parameters.
+sub check_param {
+	my $self = shift;
+	if ( $self->{farms}  < 1 ) {
+		die "Error: farms must be larger than 0\n";
+	} elsif ( $self->{farms} > 10000000 ) {
+		die "Error: farms must be less than 10000000. Is it real system??\n";
+	}
+	foreach my $bkey ( keys %{ $self->{stats} } ) {
+		if ( $#{$self->{stats}->{$bkey}} != ($self->{farms} - 1) ) {
+			die "Error: numbers of stats differ from farm number\n";
+		}
+	}
+	if ( defined $self->{input} ) {
+		my @input_array = keys %{$self->{input}};
+		my @bkey_array = keys %{$self->{stats}};
+		if ( $#input_array != $#bkey_array ) {
+			die "Error: numbers of input differ from stats blance key number\n";
+		}
+	}
+	return 0;
+}
+
 #- Define Farm Number
 sub define_farm {
 	my $self = shift;
 	#- init, regarding bulk operation.
 	$self->{effective_farm} = undef;
 	$self->{effect_in_farm_max} = undef;
+	#- check stats and input parameters.
+	$self->check_param;
 	#- if traffic and data unknown, fill average values.
 	if ( ! defined $self->{input} ) {
 		$self->input_fill_avg;
@@ -71,7 +96,6 @@ sub define_farm {
 		my $farm_str = $farm + 1;
 		my $effect_in_farm = 0;
 		print "NODE: $farm_str\n" if ( $self->{debug} );
-		#- ノードごとに効果値を加算。
 		foreach my $b_key ( keys %{$self->{input}} ) {
 			#- standard deviation : before insert.
 			my ( $sd_before ) = sprintf("%.2f",$self->sd_percent($self->{stats}->{$b_key}));
@@ -123,6 +147,7 @@ sub rollback_stat {
 
 sub report {
 	my $self = shift;
+	$self->check_param;
 	my $stats = $self->{stats};
 	print "-----------------------------\n";
 	print "farm";
@@ -180,6 +205,7 @@ sub average {
 	my $sum = $self->array_val_sum($arrayref);
 	return ( $sum / ( $#$arrayref + 1)  );
 }
+#- summarize array values 
 sub array_val_sum {
 	my ( $self, $arrayref)  = @_;
 	my $sum = 0;
@@ -188,7 +214,6 @@ sub array_val_sum {
 	}
 	return $sum;
 }
-
 
 1;
 __END__
@@ -225,7 +250,7 @@ FarmBalance - make nice balance in Farming System regarding data, traffics, etc.
 
  
   #- when use in data migration.
-  use Data::Dumper;
+  use FarmBalance;
   my $farms = 4;
   my $src = 'migration.tsv'; #- like "uid100\t20\t22\t5..."
   my $stats = {	      #- give new system stats.
@@ -274,9 +299,9 @@ And, chose most effective farm.
 
 =head1 AUTHOR
 
-DUKKIE(Masataka Koduka) E<lt>dukkiedukkie@yahoo.co.jpE<gt>
+DUKKIE(Masataka Koduka) E<lt>dukkie@cpan.orgE<gt>
 
-with helps from H.Fujimiya and Y.Kanda.
+with helps from H.Fujimiya, K.Moriyama and Y.Kanda.
 
 =head1 SEE ALSO
 
